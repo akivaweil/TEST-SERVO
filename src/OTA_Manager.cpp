@@ -21,8 +21,14 @@
  * - Port 3232 must be open for OTA communication
  */
 
-#include "OTA_Manager.h"
-#include "OTA_Config.h"
+#include <WiFi.h>
+#include <ESPmDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+
+// Network credentials
+const char* WIFI_SSID = "Everwood";
+const char* WIFI_PASSWORD = "Everwood-Staff";
 
 //* ************************************************************************
 //* ************************ WIFI CONNECTION FUNCTIONS ******************

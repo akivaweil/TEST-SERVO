@@ -2,24 +2,13 @@
 #include <WiFi.h>
 #include <ArduinoOTA.h>
 #include "ServoControl.h"
-#include "OTA_Upload.h"
+#include "OTA/OTA_Upload.h"
+#include "Config.h"
 
 //* ************************************************************************
 //* ************************ SERVO RANDOM MOVEMENT TEST *******************
 //* ************************************************************************
 // Simple test program that moves a servo to random angles with OTA capability.
-
-// Include configuration files
-extern const int SERVO_PIN;
-extern const int SERVO_CHANNEL;
-extern const int STATUS_LED_PIN;
-extern const unsigned long SERVO_MOVE_INTERVAL;
-extern const unsigned long RANDOM_SEED_DELAY;
-extern const float SERVO_MIN_ANGLE;
-extern const float SERVO_MAX_ANGLE;
-extern const int SERVO_FREQUENCY;
-extern const int SERVO_RESOLUTION;
-extern const char* OTA_HOSTNAME;
 
 // Global variables
 ServoControl servo;
@@ -52,7 +41,7 @@ void setup() {
     delay(RANDOM_SEED_DELAY);
     
     // Initialize random seed
-    randomSeed(analogRead(0));
+    randomSeed(micros());
     
     isInitialized = true;
     digitalWrite(STATUS_LED_PIN, LOW);  // Turn off LED to indicate ready

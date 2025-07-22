@@ -1,0 +1,29 @@
+{
+    "folder-colorizer.folders": [
+        {
+            "folderPath": "src/",
+            "color": "foldercolorizer.color_0066cc",
+            "badge": "🏠"
+        },
+        {
+            "folderPath": "src/config/",
+            "color": "foldercolorizer.color_00cc33",
+            "badge": "⚙️"
+        },
+        {
+            "folderPath": "src/OTA/",
+            "color": "foldercolorizer.color_ff6600",
+            "badge": "🔌"
+        },
+        {
+            "folderPath": "include/",
+            "color": "foldercolorizer.color_9933cc",
+            "badge": "💾"
+        },
+        {
+            "folderPath": "lib/",
+            "color": "foldercolorizer.color_ffcc00",
+            "badge": "��"
+        }
+    ]
+} 

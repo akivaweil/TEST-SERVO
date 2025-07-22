@@ -1,58 +1,84 @@
 #include <Arduino.h>
-#include <ESP32Servo.h>
-
-// According to your rules, OTA_Manager.cpp should not have a header file.
-// To make its functions available to main.cpp, we declare them here.
-// These functions are defined in your OTA_Manager.cpp file.
-void initOTA();
-void handleOTA();
-
-// Per your rules, we are using comments to explain the code.
-// This section defines the pin for the servo motor.
-// Using int for the pin number to ensure proper servo functionality.
-const int servoPin = 14;
-
-// This creates a servo object.
-Servo myServo;
+#include <WiFi.h>
+#include <ArduinoOTA.h>
+#include "ServoControl.h"
+#include "OTA_Upload.h"
 
 //* ************************************************************************
-//* ************************ SETUP ******************************************
+//* ************************ SERVO RANDOM MOVEMENT TEST *******************
 //* ************************************************************************
-// This function runs once when the ESP32 starts up.
+// Simple test program that moves a servo to random angles with OTA capability.
+
+// Include configuration files
+extern const int SERVO_PIN;
+extern const int SERVO_CHANNEL;
+extern const int STATUS_LED_PIN;
+extern const unsigned long SERVO_MOVE_INTERVAL;
+extern const unsigned long RANDOM_SEED_DELAY;
+extern const float SERVO_MIN_ANGLE;
+extern const float SERVO_MAX_ANGLE;
+extern const int SERVO_FREQUENCY;
+extern const int SERVO_RESOLUTION;
+extern const char* OTA_HOSTNAME;
+
+// Global variables
+ServoControl servo;
+unsigned long lastMoveTime = 0;
+bool isInitialized = false;
+
+//* ************************************************************************
+//* ************************ SETUP FUNCTION *******************************
+//* ************************************************************************
 void setup() {
-  // Initialize Serial for debugging
-  Serial.begin(115200);
-  Serial.println("Starting servo tester...");
-  
-  // Try to attach the servo - continue even if it fails
-  if (myServo.attach(servoPin)) {
-    Serial.println("Servo successfully attached to pin " + String(servoPin));
-  } else {
-    Serial.println("Servo failed to attach to pin " + String(servoPin) + " - continuing anyway");
-  }
-  
-  // Test initial position
-  myServo.write(90);
-  Serial.println("Servo moved to 90 degrees (center position)");
-  delay(2000); // Give time to see initial movement
+    // Initialize serial communication
+    Serial.begin(115200);
+    
+    // Initialize status LED
+    pinMode(STATUS_LED_PIN, OUTPUT);
+    digitalWrite(STATUS_LED_PIN, HIGH);  // Turn on LED to indicate startup
+    
+    // Setup OTA functionality
+    setupOTA();
+    ArduinoOTA.setHostname(OTA_HOSTNAME);
+    
+    // Initialize servo
+    servo.init(SERVO_PIN, SERVO_CHANNEL, SERVO_FREQUENCY, SERVO_RESOLUTION);
+    servo.setAngleRange(SERVO_MIN_ANGLE, SERVO_MAX_ANGLE);
+    
+    // Move servo to center position initially
+    servo.write(90.0);
+    
+    // Wait before starting random movements
+    delay(RANDOM_SEED_DELAY);
+    
+    // Initialize random seed
+    randomSeed(analogRead(0));
+    
+    isInitialized = true;
+    digitalWrite(STATUS_LED_PIN, LOW);  // Turn off LED to indicate ready
 }
 
 //* ************************************************************************
-//* ************************ MAIN LOOP ************************************
+//* ************************ LOOP FUNCTION ********************************
 //* ************************************************************************
-// This function runs repeatedly after setup() is complete.
 void loop() {
-  //! ************************************************************************
-  //! STEP 1: MOVE SERVO TO 24 DEGREES
-  //! ************************************************************************
-  Serial.println("Moving servo to 24 degrees");
-  myServo.write(24);
-  delay(1000); // wait 1 second
-
-  //! ************************************************************************
-  //! STEP 2: MOVE SERVO TO 90 DEGREES
-  //! ************************************************************************
-  Serial.println("Moving servo to 90 degrees");
-  myServo.write(90);
-  delay(1000); // wait 1 second
-} 
+    // Handle OTA updates
+    handleOTA();
+    
+    // Check if it's time to move the servo
+    if (isInitialized && (millis() - lastMoveTime >= SERVO_MOVE_INTERVAL)) {
+        // Generate random angle between min and max
+        float randomAngle = random(SERVO_MIN_ANGLE * 100, SERVO_MAX_ANGLE * 100) / 100.0;
+        
+        // Move servo to random angle
+        servo.write(randomAngle);
+        
+        // Update last move time
+        lastMoveTime = millis();
+        
+        // Brief LED flash to indicate movement
+        digitalWrite(STATUS_LED_PIN, HIGH);
+        delay(50);
+        digitalWrite(STATUS_LED_PIN, LOW);
+    }
+}
